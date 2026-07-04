@@ -7,9 +7,24 @@ lets you pick one to turn on via **Wake-on-LAN**.
 It talks to the router over AVM's TR-064 interface using
 [`fritzconnection`](https://github.com/kbr/fritzconnection).
 
+```text
+                       FritzBox network devices
+┏━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ # ┃ Name           ┃ IP             ┃ MAC               ┃ Status    ┃
+┡━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
+│ 1 │ Gaming-PC      │ 192.168.178.42 │ 1C:1B:0D:AA:BB:CC │ ○ offline │
+│ 2 │ NAS            │ 192.168.178.20 │ 00:11:22:33:44:55 │ ○ offline │
+│ 3 │ fritz.box      │ 192.168.178.1  │ 34:31:C4:AA:BB:CC │ ● online  │
+│ 4 │ Living-Room-TV │ 192.168.178.60 │ B8:27:EB:11:22:33 │ ● online  │
+│ 5 │ Office-Laptop  │ 192.168.178.31 │ 3C:22:FB:44:55:66 │ ● online  │
+└───┴────────────────┴────────────────┴───────────────────┴───────────┘
+
+Select device number to wake (q to quit):
+```
+
 ## Requirements
 
-- [uv](https://docs.astral.sh/uv/)
+- Python 3.12+.
 - A FRITZ!Box user with the *"FRITZ!Box Settings"* permission.
 - The target device must support **Wake-on-LAN** and have it enabled in its
   own network adapter / BIOS-UEFI settings, and be known to the FritzBox
@@ -17,18 +32,12 @@ It talks to the router over AVM's TR-064 interface using
 - For remote access: an active **myFritz** account and enabled internet access
   (`Internet > MyFRITZ! Account`).
 
-> The per-device **"Auto Wake"** option (*"Automatically wake up ... when it is
-> accessed from the internet"*) is **not** required. That setting only triggers
-> a wake automatically on inbound internet traffic; this tool instead sends a
-> wake packet on demand via the same mechanism as the device's *"Start
-> Computer"* button (`X_AVM-DE_WakeOnLANByMACAddress`).
-
 ## Install
 
-Install it as a command you can run from anywhere:
+Install it from PyPI:
 
 ```sh
-uv tool install .          # or: pipx install .
+pip install fritzwol         # or: uv tool install fritzwol / pipx install fritzwol
 ```
 
 This puts a `fritzwol` command on your `PATH`. To install straight from GitHub
@@ -36,6 +45,12 @@ without cloning first:
 
 ```sh
 uv tool install git+https://github.com/jesperschlegel/fritzWOL.git
+```
+
+Or from a local checkout:
+
+```sh
+uv tool install .          # or: pipx install .
 ```
 
 For local development instead of a global install:
@@ -53,14 +68,19 @@ Interactive (you will be prompted for anything not supplied):
 fritzwol
 ```
 
-Remote access through myFritz (TLS on, port 49443 are the defaults):
+It prints the known devices (offline ones first, as the usual wake candidates) and lets you pick one by number.
+
+Remote access through myFritz — pass the HTTPS remote-access port your
+FRITZ!Box exposes (`Internet > Permit Access > FRITZ!Box Services`, often 443
+or a custom port):
 
 ```sh
-fritzwol --address xxxxxxxxxxxxxxxx.myfritz.net --user myuser
+fritzwol --address xxxxxxxxxxxxxxxx.myfritz.net --user myuser --port 443
 ```
 
-> The TR-064 interface uses port **49443** over TLS (not the myFritz web-UI
-> port 443). This is the default, so you normally don't need `--port`.
+> The default port (**49443**, the LAN TLS port) only applies to local access.
+> For remote myFritz access you normally need to set `--port` to the HTTPS
+> port configured on the box.
 
 Local access on your home network:
 

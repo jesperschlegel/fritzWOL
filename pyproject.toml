@@ -1,6 +1,6 @@
 [project]
 name = "fritzwol"
-version = "0.1.0"
+version = "0.1.1"
 description = "List FritzBox network devices and wake one with Wake-on-LAN."
 readme = "README.md"
 requires-python = ">=3.12"
