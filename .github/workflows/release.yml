@@ -1,0 +1,43 @@
+name: Publish to PyPI
+
+# Publishes to PyPI when you publish a GitHub Release (which also creates the
+# git tag). Uses PyPI Trusted Publishing (OIDC) — no API token is stored.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Build sdist and wheel
+        run: uv build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # Must match the environment configured on the PyPI trusted publisher.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fritzwol
+    permissions:
+      id-token: write # required for trusted publishing (OIDC)
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
